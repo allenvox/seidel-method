@@ -39,7 +39,7 @@ int main()
             if (abs(a[i][i]) < abs(a[k][i])) // compare absolute values
             {
                 for (j = 0; j <= n; j++)
-                {
+                { // swap
                     double temp = a[i][j];
                     a[i][j] = a[k][j];
                     a[k][j] = temp;
@@ -64,11 +64,15 @@ int main()
             for (j = 0; j < n; j++)
             {
                 if (j != i)
+                {
                     x[i] = x[i] - a[i][j] * x[j];
+                }
             }
             x[i] = x[i] / a[i][i];
-            if (abs(x[i] - y) <= eps) // Compare the ne value with the last value
+            if (abs(x[i] - y) <= eps)
+            { // Compare the ne value with the last value
                 flag++;
+            }
             std::cout << x[i] << std::setw(18);
         }
         std::cout << "\n";
@@ -81,6 +85,5 @@ int main()
     {
         std::cout << "x" << i << " = " << x[i] << std::endl;
     }
-
     return 0;
 }
