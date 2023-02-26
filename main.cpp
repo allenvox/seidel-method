@@ -1,89 +1,256 @@
-#include <iostream>
-#include <iomanip>
 #include <cmath>
+#include <iostream>
+
+using namespace std;
+
+double okr(double X, double eps)
+{
+    int i = 0;
+    while (eps != 1)
+    {
+        i++;
+        eps *= 10;
+    }
+    int okr = pow(double(10), i);
+    X = int(X * okr + 0.5) / double(okr);
+    return X;
+}
+
+double normOfMatrix(double A[3][3], int N)
+{
+    // norm of matrix A
+    double sum = 0;
+    double sums[3];
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < N; j++)
+        {
+            sum += abs(A[i][j]);
+        }
+        sums[i] = sum;
+        sum = 0;
+    }
+    double norm = sums[0];
+    for (int i = 1; i < N; i++)
+    {
+        if (sums[i] > norm)
+        {
+            norm = sums[i];
+        }
+    }
+    return norm;
+}
+
+double iterat(double A[3][3], double B[3], int N, double eps)
+{
+    double matrixNorm = normOfMatrix(A, N);
+    double vectorNorm, coef;
+    if (matrixNorm < 1)
+    {
+        cout << "\nНорма матрицы A = " << matrixNorm << " < 1  => сходится в Евклидовой метрике\n"
+             << std::endl;
+
+        int k = 0;
+        int i, j;
+        double X[N];
+        double s, g, diff;
+        do
+        {
+            s = 0;
+            k++;
+            for (i = 0; i < N; i++)
+            {
+                g = B[i];
+                for (j = 0; j < N; j++)
+                {
+                    g += A[i][j] * X[j];
+                }
+                cout << "X" << i + 1 << " = " << g << endl;
+                diff = X[i] - g;
+                cout << "X" << i + 1 << "(прошлый) - X" << i + 1 << "(новый) = " << diff << "\n"
+                     << endl;
+                s += (X[i] - g) * (X[i] - g); // (delta x) ^ 2
+                X[i] = g;
+            }
+            vectorNorm = sqrt(s); // norm of vector = sqrt(sum of X^2)
+            cout << "Норма (x1 - x0) = " << vectorNorm << endl;
+            coef = (matrixNorm / (1 - matrixNorm));
+            /*int iter = (int)(log(eps * (1 - matrixNorm) / vectorNorm) / log(matrixNorm));
+            cout << "\nОсталось итераций: " << iter << "\n"
+                 << endl;*/
+        } while ((coef * vectorNorm) >= eps);
+
+        cout << "\nРешение системы:" << endl;
+        for (i = 0; i < N; i++)
+        {
+            cout << "X" << i << " = " << okr(X[i], eps) << endl;
+        }
+        cout << "\nЧисло итераций: " << k - 1 << "\n"
+             << endl;
+    }
+    else
+    {
+        cerr << "Условие сходимости не выполняется!\n"
+             << endl;
+    }
+    return 0;
+}
 
 int main()
 {
-    std::cout.precision(2);          // 2 digits after comma
-    std::cout.setf(std::ios::fixed); // fixed digits format after comma
-    int n, i, j, k, flag = 0, count = 0;
+    int N = 3, i, j;
 
-    std::cout << "Enter the number of equations:\n";
-    std::cin >> n;
-    double a[n][n + 1]; // the elements of the augmented matrix
-    double x[n];        // the values of variables
-    double eps, y;      // epsilon & y
+    double A[3][3] = {
+        {3.1, -1.5, 1},
+        {0.8, -3, 1.4},
+        {-1, 1.2, 2.7},
+    };
+    double B[3] = {-1, 0, 2};
 
-    std::cout << "Enter the elements of the matrix:\n";
-    for (i = 0; i < n; i++)
+    double C[3][4];
+    for (i = 0; i < N; i++)
     {
-        for (j = 0; j <= n; j++)
+        for (j = 0; j < N + 1; j++)
         {
-            std::cin >> a[i][j];
+            if (j != N)
+            {
+                C[i][j] = A[i][j];
+            }
+            else
+            {
+                C[i][j] = B[i];
+            }
         }
     }
 
-    std::cout << "Enter the initial values of the variables:\n";
-    for (i = 0; i < n; i++)
+    cout.precision(5);     // 2 digits after comma
+    cout.setf(ios::fixed); // fixed digits format after comma
+    double eps;
+    cout << "Введите точность вычислений: ";
+    cin >> eps;
+
+    /*cout << "Введите размер квадратной матрицы: ";
+    cin >> N;
+    double A[10][10], B[10], C[10][11];
+    cout << "Заполните матрицу А (N x N): " << endl
+         << endl;
+    for (i = 0; i < N; i++)
     {
-        std::cin >> x[i];
+        for (j = 0; j < N; j++)
+        {
+            cout << "A[" << i << "][" << j << "] = ";
+            cin >> A[i][j];
+            C[i][j] = A[i][j];
+        }
+    }*/
+
+    cout << "\nМатрица A:" << endl;
+    for (i = 0; i < N; i++)
+    {
+        for (j = 0; j < N; j++)
+        {
+            cout << A[i][j] << "  ";
+        }
+        cout << endl;
     }
 
-    std::cout << "Enter the accuracy upto which you want the solution:\n";
-    std::cin >> eps;
+    /*cout << "\nЗаполните столбец свободных членов: " << endl;
+    for (i = 0; i < N; i++)
+    {
+        cout << "B[" << i << "] = ";
+        cin >> B[i];
+        C[i][N - 1] = B[i];
+    }*/
 
-    for (i = 0; i < n; i++)
-    { // partial pivotisation to make the equations diagonally dominant
-        for (k = i + 1; k < n; k++)
+    // triangulation
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < i; j++)
         {
-            if (abs(a[i][i]) < abs(a[k][i])) // compare absolute values
+            double ratio = C[i][j] / C[i][i];
+            for (int k = j; k < N + 1; k++)
             {
-                for (j = 0; j <= n; j++)
+                C[i][k] -= ratio * C[j][k];
+            }
+        }
+    }
+
+    // partial pivotisation to make the equations diagonally dominant
+    for (i = 0; i < N; i++)
+    {
+        for (int k = 0; k < N + 1; k++)
+        {
+            if (abs(C[i][i]) < abs(C[k][i])) // compare absolute values
+            {
+                for (j = 0; j <= N; j++)
                 { // swap
-                    double temp = a[i][j];
-                    a[i][j] = a[k][j];
-                    a[k][j] = temp;
+                    double temp = C[i][j];
+                    C[i][j] = C[k][j];
+                    C[k][j] = temp;
                 }
             }
         }
     }
-    std::cout << "Iteration" << std::setw(10);
-    for (i = 0; i < n; i++)
-    {
-        std::cout << "x" << i << std::setw(18);
-    }
-    std::cout << "\n";
-    do // iterations to calculate the solution
-    {
-        std::cout << "\n"
-                  << count + 1 << "." << std::setw(16);
-        for (i = 0; i < n; i++)
-        {
-            y = x[i];
-            x[i] = a[i][n];
-            for (j = 0; j < n; j++)
-            {
-                if (j != i)
-                {
-                    x[i] = x[i] - a[i][j] * x[j];
-                }
-            }
-            x[i] = x[i] / a[i][i];
-            if (abs(x[i] - y) <= eps)
-            { // Compare the ne value with the last value
-                flag++;
-            }
-            std::cout << x[i] << std::setw(18);
-        }
-        std::cout << "\n";
-        count++;
-    } while (flag < n); // If the values of all the variables don't differ from their previious values with error more than eps then flag must be n and hence stop the loop
 
-    // print the solution
-    std::cout << "\n The solution is as follows:\n";
-    for (i = 0; i < n; i++)
+    // приведение к виду для итераций
+    for (int i = 0; i < N; i++)
     {
-        std::cout << "x" << i << " = " << x[i] << std::endl;
+        double ratio = C[i][i];
+        for (int j = 0; j < N + 1; j++)
+        {
+            C[i][j] /= ratio;
+        }
     }
+
+    // divide C into A & B
+    for (i = 0; i < N; i++)
+    {
+        for (j = 0; j < N + 1; j++)
+        {
+            if (j != N)
+            {
+                A[i][j] = C[i][j];
+            }
+            else
+            {
+                B[i] = C[i][j];
+            }
+        }
+    }
+
+    cout << "\nМатрица А, приведённая к нормальному виду:" << endl;
+    for (i = 0; i < N; i++)
+    {
+        for (j = 0; j < N; j++)
+        {
+            cout << A[i][j] << "  ";
+        }
+        cout << endl;
+    }
+
+    // matrix E - A
+    for (i = 0; i < N; i++)
+    {
+        for (j = 0; j < N; j++)
+        {
+            A[i][j] = -A[i][j];
+            if (i == j)
+            {
+                A[i][j] = A[i][j] + 1;
+            }
+        }
+    }
+
+    cout << "\nМатрица (E - А):" << endl;
+    for (i = 0; i < N; i++)
+    {
+        for (j = 0; j < N; j++)
+        {
+            cout << A[i][j] << "  ";
+        }
+        cout << endl;
+    }
+
+    iterat(A, B, N, eps);
     return 0;
 }
