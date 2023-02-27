@@ -66,18 +66,19 @@ double iterat(double A[3][3], double B[3], int N, double eps)
                     g += A[i][j] * X[j];
                 }
                 cout << "X" << i + 1 << " = " << g << endl;
-                diff = X[i] - g;
+                diff = X[i] - g; // delta x
                 cout << "X" << i + 1 << "(прошлый) - X" << i + 1 << "(новый) = " << diff << "\n"
                      << endl;
-                s += (X[i] - g) * (X[i] - g); // (delta x) ^ 2
+                s += diff * diff; // (delta x) ^ 2
                 X[i] = g;
             }
             vectorNorm = sqrt(s); // norm of vector = sqrt(sum of X^2)
-            cout << "Норма (x1 - x0) = " << vectorNorm << endl;
+            cout << "Норма (X" << i + 1 << " - X" << i << ") = " << vectorNorm << endl;
             coef = (matrixNorm / (1 - matrixNorm));
-            /*int iter = (int)(log(eps * (1 - matrixNorm) / vectorNorm) / log(matrixNorm));
-            cout << "\nОсталось итераций: " << iter << "\n"
-                 << endl;*/
+            // int iter = (int)ceil(log(1e-2 * (1 - matrixNorm) / vectorNorm)) / log(matrixNorm);
+            // int iter = (int)(log(eps * (1 - vectorNorm) / matrixNorm) / log(vectorNorm));
+            // cout << "\nОсталось итераций: " << iter << "\n"
+            // << endl;
         } while ((coef * vectorNorm) >= eps);
 
         cout << "\nРешение системы:" << endl;
@@ -123,7 +124,7 @@ int main()
         }
     }
 
-    cout.precision(5);     // 2 digits after comma
+    cout.precision(5);     // 5 digits after comma
     cout.setf(ios::fixed); // fixed digits format after comma
     double eps;
     cout << "Введите точность вычислений: ";
@@ -161,6 +162,12 @@ int main()
         cin >> B[i];
         C[i][N - 1] = B[i];
     }*/
+
+    cout << "\nСтолбец свободных членов:" << endl;
+    for (i = 0; i < N; i++)
+    {
+        cout << "X" << i + 1 << " = " << B[i] << endl;
+    }
 
     // triangulation
     for (int i = 0; i < N; i++)
