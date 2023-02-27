@@ -44,7 +44,8 @@ double normOfMatrix(double A[3][3], int N)
 double iterat(double A[3][3], double B[3], int N, double eps)
 {
     double matrixNorm = normOfMatrix(A, N);
-    double vectorNorm, coef;
+    double coef = (matrixNorm / (1 - matrixNorm));
+    double vectorNorm;
     if (matrixNorm < 1)
     {
         cout << "\nНорма матрицы A = " << matrixNorm << " < 1  => сходится в Евклидовой метрике\n"
@@ -74,11 +75,11 @@ double iterat(double A[3][3], double B[3], int N, double eps)
             }
             vectorNorm = sqrt(s); // norm of vector = sqrt(sum of X^2)
             cout << "Норма (X" << i + 1 << " - X" << i << ") = " << vectorNorm << endl;
-            coef = (matrixNorm / (1 - matrixNorm));
-            // int iter = (int)ceil(log(1e-2 * (1 - matrixNorm) / vectorNorm)) / log(matrixNorm);
-            // int iter = (int)(log(eps * (1 - vectorNorm) / matrixNorm) / log(vectorNorm));
-            // cout << "\nОсталось итераций: " << iter << "\n"
-            // << endl;
+
+            int iter = (int)(log((log(1 - matrixNorm) * log(eps)) / (log(vectorNorm) * log(matrixNorm))));
+            cout << "\nКоличество оставшихся итераций: k = " << iter << "\n"
+                 << endl;
+
         } while ((coef * vectorNorm) >= eps);
 
         cout << "\nРешение системы:" << endl;
